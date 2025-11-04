@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 import os
 
 # -------------------------------
@@ -20,7 +20,7 @@ if not api_key:
     st.error("⚠️ OpenAI API key not found. Please add it in Streamlit Secrets.")
     st.stop()
 
-client = OpenAI(api_key=api_key)
+openai.api_key = api_key
 
 # -------------------------------
 # 🌟 Header
@@ -60,7 +60,7 @@ with tab1:
         else:
             with st.spinner("Composing your poems... 🪄"):
                 try:
-                    response_low = client.chat.completions.create(
+                    response_low = openai.ChatCompletion.create(
                         model="gpt-4o-mini",
                         messages=[
                             {"role": "system", "content": "You are a focused and structured poet."},
@@ -68,7 +68,8 @@ with tab1:
                         ],
                         temperature=temp_low,
                     )
-                    response_high = client.chat.completions.create(
+
+                    response_high = openai.ChatCompletion.create(
                         model="gpt-4o-mini",
                         messages=[
                             {"role": "system", "content": "You are a creative and imaginative poet."},
@@ -77,16 +78,22 @@ with tab1:
                         temperature=temp_high,
                     )
 
-                    poem_low = response_low.choices[0].message.content.strip()
-                    poem_high = response_high.choices[0].message.content.strip()
+                    poem_low = response_low.choices[0].message["content"].strip()
+                    poem_high = response_high.choices[0].message["content"].strip()
 
                     col1, col2 = st.columns(2)
                     with col1:
                         st.markdown("### 🧊 Focused Poem")
-                        st.markdown(f"<div style='background-color:#F8F9FA;padding:15px;border-radius:10px'>{poem_low}</div>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"<div style='background-color:#F8F9FA;padding:15px;border-radius:10px'>{poem_low}</div>",
+                            unsafe_allow_html=True,
+                        )
                     with col2:
                         st.markdown("### 🔥 Creative Poem")
-                        st.markdown(f"<div style='background-color:#FFF5E6;padding:15px;border-radius:10px'>{poem_high}</div>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"<div style='background-color:#FFF5E6;padding:15px;border-radius:10px'>{poem_high}</div>",
+                            unsafe_allow_html=True,
+                        )
 
                 except Exception as e:
                     st.error(f"❌ Error: {e}")
@@ -107,7 +114,7 @@ with tab2:
         else:
             with st.spinner("AI is thinking..."):
                 try:
-                    response = client.chat.completions.create(
+                    response = openai.ChatCompletion.create(
                         model="gpt-3.5-turbo",
                         messages=[
                             {"role": "system", "content": "You are a science tutor who explains complex topics simply and clearly."},
@@ -116,9 +123,13 @@ with tab2:
                         temperature=temp_sci,
                     )
 
-                    answer = response.choices[0].message.content.strip()
+                    answer = response.choices[0].message["content"].strip()
                     st.success("✅ Answer Ready!")
-                    st.markdown(f"<div style='background-color:#E8F5E9;padding:15px;border-radius:10px'>{answer}</div>", unsafe_allow_html=True)
+                    st.markdown(
+                        f"<div style='background-color:#E8F5E9;padding:15px;border-radius:10px'>{answer}</div>",
+                        unsafe_allow_html=True,
+                    )
+
                 except Exception as e:
                     st.error(f"❌ Error: {e}")
 
